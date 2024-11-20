@@ -32,10 +32,15 @@ class DataCleaner:
             row["Gross Price"] = round_price(row.get("Gross Price"))
 
             # Step 3: Handle anomalies (e.g., "Pepsi" purchases)
-            if "Pepsi" in row.get("Fuel Type", "").lower():  # Checking for anomalies
+            fuel_type = row.get("Fuel Type", "").strip().lower()
+            if "pepsi" in fuel_type:
                 print(f"Anomaly detected: {row}")  # Debugging - Print detected anomalies
                 self.anomalies.append(row)  # Add to anomalies list
                 continue  # Skip this row and don't add to cleaned data
+            elif fuel_type not in ["gasoline", "diesel", "ethanol"]:  # Example valid fuel types
+                print(f"Anomaly detected (invalid fuel type): {row}")  # Debugging - Print detected anomalies
+                self.anomalies.append(row)  # Add to anomalies list
+                continue
 
             # Step 4: Handle missing zip codes in the address
             if not self._has_zip_code(row.get("Full Address")):
