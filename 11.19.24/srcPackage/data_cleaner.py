@@ -2,6 +2,7 @@
 
 import csv
 import os
+import re
 from srcPackage.utils import round_price, remove_duplicates, write_csv
 from srcPackage.api_handler import fetch_zip_code
 
@@ -37,10 +38,10 @@ class DataCleaner:
                 print(f"Anomaly detected: {row}")  # Debugging - Print detected anomalies
                 self.anomalies.append(row)  # Add to anomalies list
                 continue  # Skip this row and don't add to cleaned data
-            elif fuel_type not in ["gasoline", "diesel", "ethanol"]:  # Example valid fuel types
-                print(f"Anomaly detected (invalid fuel type): {row}")  # Debugging - Print detected anomalies
-                self.anomalies.append(row)  # Add to anomalies list
-                continue
+            #elif fuel_type not in ["gasoline", "diesel", "ethanol"]:  # Example valid fuel types
+            #    print(f"Anomaly detected (invalid fuel type): {row}")  # Debugging - Print detected anomalies
+            #    self.anomalies.append(row)  # Add to anomalies list
+            #    continue
 
             # Step 4: Handle missing zip codes in the address
             if not self._has_zip_code(row.get("Full Address")):
@@ -60,12 +61,25 @@ class DataCleaner:
     def _add_zip_code(self, address):
         # Extract city from address and fetch a zip code using the API
         city = self._extract_city(address)
-        zip_code = fetch_zip_code(city)  # Get zip code from the API
-        return f"{address}, {zip_code}"
+        if city:
+            zip_code = fetch_zip_code(city)  # Get zip code from the API
+            return f"{address}, {zip_code}"
+        else:
+            print(f"Could not extra city from address: {address}")
+            return address # Return unchanged address
 
     def _extract_city(self, address):
         # Logic to extract city from the address (assuming address format "Street, City")
-        return address.split(",")[1].strip()
+        #return address.split(",")[1].strip()
+            if not address:
+                print(f"Empty or invalid address: {address}")
+                return None
+            # Look for patterns like ", City," or ", City"
+            match = re.search(r",\s*([^,]+)\s*(?:,|$)", address)
+            if match:
+                return match.group(1).strip()
+            print(f"Failed to extract city from address: {address}")
+            return None
 
     def _write_to_files(self):
         # Ensure the 'Data' folder exists

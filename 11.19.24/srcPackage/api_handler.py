@@ -2,7 +2,7 @@
 
 import requests
 
-API_KEY = "your_api_key_here"
+API_KEY = "370e1070-a28d-11ef-84ae-cb8951c45a11"
 BASE_URL = "https://app.zipcodebase.com/api/v1/search"
 
 def fetch_zip_code(city):
